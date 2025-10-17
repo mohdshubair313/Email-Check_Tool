@@ -1,103 +1,103 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useTransition } from 'react';
+import { generateTestCode, analyzeEmails } from '@/app/action';
+import InboxCard from '@/components/InboxCard';
+import { Spinner } from "@/components/ui/spinner"
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [code, setCode] = useState('');
+  const [emailsSent, setEmailsSent] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const inboxes = [
+    { provider: 'Gmail', email: 'shubair313@gmail.com' },
+    { provider: 'Outlook', email: 'shubair313@outlook.com'},
+    { provider: 'Zoho', email: 'shubair313@zohomail.in' },
+    { provider: 'Proton', email: 'shubair313@proton.me' },
+  ];
+
+  const handleStartTest = async () => {
+    startTransition(async () => {
+      const result = await generateTestCode();
+      if (result.success) {
+        setCode(result.code ?? '');
+        toast.success('Test code generated!');
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  const handleAnalyze = async () => {
+    if (!code) return toast.error('Generate code first!');
+    setAnalyzing(true);
+    const result = await analyzeEmails(code);
+    setAnalyzing(false);
+    if (result.success) {
+      toast.success('Analysis complete!');
+      router.push(`/report?code=${code}`);  // Or use ID from DB
+    } else {
+      toast.error(result.error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="text-center py-12">
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">Test Your Email Deliverability!</h1>
+        <p className="text-xl text-gray-600 mb-8">Send emails to our test inboxes and see where they land: Inbox, Spam, or Promotions.</p>
+
+        {/* Inboxes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {inboxes.map((inbox, i) => (
+            <InboxCard key={i} {...inbox} />
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Start Test */}
+        {!code ? (
+          <button
+            onClick={handleStartTest}
+            disabled={isPending}
+            className="bg-blue-500 text-white px-8 py-3 cursor-pointer rounded-lg text-lg font-semibold hover:bg-blue-600 disabled:opacity-50"
+          >
+            {isPending ? 'Generating...' : 'Start New Test'}
+          </button>
+        ) : (
+          <div className="bg-yellow-100 p-6 rounded-lg">
+            <h2 className="text-2xl font-bold mb-4">Your Test Code: {code}</h2>
+            <ul className="text-left space-y-2 mb-4">
+              <li>• Copy this code.</li>
+              <li>• From your email, send a test to all 5 inboxes above.</li>
+              <li>• Subject: "Test Email - {code}"</li>
+              <li>• Body: "This is a deliverability test."</li>
+              <li>• Send all now (1-2 mins).</li>
+            </ul>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={emailsSent}
+                onChange={(e) => setEmailsSent(e.target.checked)}
+              />
+              <span>I have sent the emails</span>
+            </label>
+            <button
+              onClick={handleAnalyze}
+              disabled={!emailsSent || analyzing || isPending}
+              className="mt-4 bg-green-500 text-white px-8 py-3 rounded-lg hover:bg-green-600 cursor-pointer disabled:opacity-50"
+            >
+              {analyzing ? 'Analyzing...' : 'Start Detection'}
+            </button>
+            {analyzing && <Spinner />}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
