@@ -1,18 +1,19 @@
+// Server Component
 import { Suspense } from 'react';
 import DetectClient from '@/components/DetectClient';
 
-export default function DetectPage({ searchParams }: { searchParams: { code?: string } }) {
-  const code = searchParams.code || '';
+export default async function DetectPage({ searchParams }: { searchParams: Promise<{ code?: string }> }) {
+  const params = await searchParams;
+  const code = params?.code;
 
   if (!code) {
-    // On server, use redirect or notFound if needed
+    // Optionally, use notFound() or redirect('/')
     return null;
   }
 
   return (
     <div className="container">
-      <Suspense fallback={<div>Loading detect page...</div>}>
-        {/* Pass code as prop if needed */}
+      <Suspense fallback={<div>Loading ...</div>}>
         <DetectClient code={code} />
       </Suspense>
     </div>
