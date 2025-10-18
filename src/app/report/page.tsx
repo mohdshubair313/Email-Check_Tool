@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
-import ReportTableClient from '@/components/ReportTableClient'; // See below!
+import ReportTableClient from '@/components/ReportTableClient';
+
 
 export default async function ReportPage({
   searchParams,
